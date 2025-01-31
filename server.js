@@ -2,11 +2,17 @@ const express = require("express");
 const fs = require("fs");
 const cors = require("cors");
 
+
 const app = express();
 const PORT = 3000;
 const DB_FILE = "db.json";
 
-app.use(cors());
+app.use(cors({
+  origin: "https://sammys-pre-order-app.vercel.app",
+  methods: "GET,POST,PUT,DELETE",
+  allowedHeaders: "Content-Type"
+}));
+
 app.use(express.json());
 
 // Funkcja pomocnicza: Odczyt danych z db.json
@@ -25,8 +31,15 @@ const writeDatabase = (data) => {
 app.get("/orders/:date", (req, res) => {
   const db = readDatabase();
   const date = req.params.date;
-  res.json(db[date] || []);
+
+  if (!db[date]) {
+    db[date] = [];
+    writeDatabase(db); 
+  }
+
+  res.json(db[date]);
 });
+
 
 // Dodawanie nowego zamówienia
 app.post("/orders/:date", (req, res) => {
